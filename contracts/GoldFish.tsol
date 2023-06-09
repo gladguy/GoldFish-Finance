@@ -1,0 +1,561 @@
+pragma ever-solidity >= 0.62.0;
+pragma AbiHeader expire;
+pragma AbiHeader pubkey;
+
+import "tip3/contracts/interfaces/IAcceptTokensTransferCallback.sol";
+import "tip3/contracts/interfaces/ITokenRoot.sol";
+import "tip3/contracts/interfaces/ITokenWallet.sol";
+
+import "tip4/contracts/CollectionBase.tsol";
+
+//https://devnet.venomscan.com/accounts/0:65c3ff8fdd39c2487a9b0536c785ef8d528b1a6e8cefa9c2d03ddb1981255b6b/source-code/contract
+ 
+contract GoldFish is IAcceptTokensTransferCallback, CollectionBase {
+    uint static nonce;
+    uint256 static owner;
+
+    address root;
+    address wallet;  // Used for transfer
+    uint public state;
+    uint256 public _supply; // How much tokens will be distributed (with decimals)
+    uint128 public _rate; // How much tokens buyer will receive for 1 nanovenom (1*10^9)    
+    
+    uint public transferCount;
+    uint public successCount;
+
+
+    event StateChange(uint _state);
+
+    event barrowPoolCreated(BarrowPool _hash_value, uint transfers);
+    event barrowPoolFetch(BarrowPool _hash_value, uint transfers);
+    event poolSupport(BarrowPool pool, uint pool_id,string message);
+
+
+    event ThankYou(address sender, uint128 amount);
+    event NewWallet(address some);
+
+    constructor(
+        uint _state, address root_, 
+        uint256 supply,uint128 rate,
+        TvmCell codeNft, 
+        TvmCell codeIndex,
+        TvmCell codeIndexBasis,
+        string json) 
+        
+
+    CollectionBase(codeNft, codeIndex, codeIndexBasis, json) public {
+
+        tvm.accept();
+        root = root_;
+        _supply = supply;
+        _rate  = rate;
+        ITokenRoot(root).deployWallet{
+            value: 2_000_000_000,
+            callback: onDeployWallet
+        }(this, 1_000_000_000);
+
+        
+        transferCount = _state;
+        successCount  = _state;
+    }
+
+ 
+
+    struct BarrowPool {
+        uint loanamount;
+        uint interestrate;
+        uint tenure;
+        string companyname;
+        string website;
+        uint votesLimit;
+        string status;
+        address creator;
+    }
+
+    /*
+    
+    FundTransferRequest[] fundTransfer;
+    uint256[] hashCodeMap;
+    uint128[] transferAmount;
+
+
+    mapping(uint256 => uint) hashMap;
+
+    mapping(FundTransferRequest => uint) map;
+
+     */
+
+    BarrowPool[] barrowPools;
+    uint128[] transferAmount;
+    
+    //BarrowPool[] barrowPools = new BarrowPool[](100);
+
+    mapping(uint => BarrowPool) barrowPoolMap;
+
+
+    uint[] positiveVotes = new uint[](100);
+    uint[] negativeVotes = new uint[](100);
+    uint[] totalVotes = new uint[](100);
+
+    //Successfully passed Barrow Pools
+    uint[] SelectedBarrowPoolID = new uint[](100);
+
+    mapping(uint256 => uint) hashMap;
+
+    mapping(address => uint) LiquidityPool;
+    mapping(address => uint128) LiquidityPoolContributionPercentage;
+
+    mapping(uint => uint) BarrowPoolAmount;
+    mapping(address => uint128) sendAmount;
+
+
+    uint totalLiquidityAmount = 0;
+    uint128 balance_;
+
+
+    function newBarrowPool(uint _loanamount,uint _interestrate, uint _tenure,string _companyname,string _website, uint _votesLimit) external {
+       
+        tvm.accept();
+        tvm.rawReserve(4 ever, 0);
+
+        uint vote = 0;
+
+        BarrowPool pool = BarrowPool(_loanamount, _interestrate,  _tenure, _companyname, _website,_votesLimit,"Voting", msg.sender);
+        
+        //barrowPools.push(pool);
+        barrowPoolMap[transferCount] = pool;
+        
+        positiveVotes[transferCount] = 0;
+        negativeVotes[transferCount] = 0;
+        totalVotes[transferCount] = 0;
+
+        transferCount = transferCount + 1;
+        balance_ = 100;
+        emit barrowPoolCreated(pool, (transferCount-1));
+
+    }
+
+
+    function balance()  external view responsible returns (uint128) {
+       
+        return { value: 0, flag: 64, bounce: false } balance_;
+    }
+
+    function checkPoolExists(uint pool_id)  external view  returns (string) 
+    {
+        tvm.accept();
+        tvm.rawReserve(4 ever, 0);
+
+        string message = "";
+        if(barrowPoolMap.exists(pool_id))
+        {
+            message=  "Pool is available";
+        }
+          message = "Sorry dude ! Pool is not available";
+
+        return message;
+    }
+
+    //Working Perfectly
+    function getBarrowPool(uint pool_id) external view  returns (BarrowPool)
+    {
+        tvm.accept();
+        tvm.rawReserve(4 ever, 0);
+
+        //uint pool_id = 0;
+
+
+        BarrowPool pool;
+        if(pool_id <= (transferCount-1) )
+        {
+           pool = barrowPoolMap[pool_id];
+        
+        }
+        emit barrowPoolFetch(pool, pool_id);
+        return pool;
+    }
+
+
+    /******************************************************/
+    /*            Deposit to liquidity                    */
+    /*            Number of tokens = Number of Votes      */
+    /******************************************************/
+    function addLiquidity(uint amount) external 
+    {
+
+        tvm.accept();
+        tvm.rawReserve(4 ever, 0);
+
+        uint _amount = 0;
+        uint _total = 0;
+        if(LiquidityPool.exists(msg.sender))
+        {
+            _amount = LiquidityPool[msg.sender];
+        }
+        _total = amount + _amount;
+        LiquidityPool[msg.sender] = _total;
+       
+
+        uint percentage = 100;
+
+        totalLiquidityAmount = totalLiquidityAmount + amount;
+
+        uint contributionPercentage = (_total / totalLiquidityAmount) * 100;
+        LiquidityPoolContributionPercentage[msg.sender] = uint128(contributionPercentage);
+    }
+
+  
+    // Get the total liquidity, caller liquidity and percentage of liquidity contributed
+    function getLiquidity(address _wallet) external view returns (uint,uint,uint128)
+    {
+        tvm.accept();
+        tvm.rawReserve(4 ever, 0);
+
+        return (totalLiquidityAmount,LiquidityPool[msg.sender],LiquidityPoolContributionPercentage[msg.sender]);
+    }
+    /******************************************************/
+    /*        Support a Barrow Request                    */
+    /*        Role : Supporter - who support early 20%    */
+    /******************************************************/
+    function addSupport(uint amount , uint pool_id) external returns (string)
+    {
+        BarrowPool pool;
+        string message = "";
+        if(pool_id <= (transferCount-1) )
+        {
+            uint _amount = 0;
+            uint _totalAmount = 0;
+            pool = barrowPoolMap[pool_id];
+
+            uint loanamount = pool.loanamount;
+
+            if(pool.status == "Accepted")
+            {
+                if(BarrowPoolAmount.exists(pool_id))
+                {
+                    _amount = BarrowPoolAmount[pool_id];
+                }        
+                _totalAmount = amount + _amount;
+                BarrowPoolAmount[pool_id] = _totalAmount;
+
+                uint support_percentage = 20;
+                uint percentage = 100;
+                uint initialSupport_amount = loanamount * (support_percentage/percentage);
+
+                if(_totalAmount >= initialSupport_amount)
+                {
+                    // Now we reached 20% support by the backers
+                    // Smart contract will add 80% from the liquidity                
+
+                    if(totalLiquidityAmount >= loanamount)
+                    {
+                        // Transfer the tokens to the Barrower
+                        message =  "20% from Supporter and 80% from liquidity funded to the barrower";
+
+                    }
+                    message = "Thank you 20% Support reached";    
+                }
+                
+                message = "Thank you for Supporting the Barrow Request";
+            }
+            message = "Pool is stilling in voting stage";
+        }
+        message = "Pool doesn't exisit";
+
+        emit poolSupport(pool, pool_id,message);
+
+        return message;
+    }    
+
+    /******************************************************/
+    /*        get Amount collected in the Pool            */
+    /*                                                    */
+    /******************************************************/
+
+    function getPoolAmount(uint pool_id) external view returns (uint)
+    {
+        tvm.accept();
+        tvm.rawReserve(4 ever, 0);
+
+        if(pool_id <= (transferCount-1) )
+        {
+
+            return BarrowPoolAmount[pool_id];
+        }
+    }
+
+    /******************************************************/
+    /*        Interest calculation for X months           */
+    /*                                                    */
+    /******************************************************/
+    function getInterestAmount(uint pool_id, uint months) external view returns (uint)
+    {
+
+        tvm.accept();
+        tvm.rawReserve(4 ever, 0);
+
+        BarrowPool pool;
+        uint interest = 0;
+        uint interest_for_months = 0;
+
+        if(pool_id <= (transferCount-1) )
+        {
+           //pool = barrowPools[pool_id];
+           pool = barrowPoolMap[pool_id];
+
+           uint monthsperyear = 12;
+
+           uint rate_of_interest = pool.interestrate/monthsperyear;
+
+
+           interest = (pool.loanamount * rate_of_interest)/100 ; // Total Inerest 12 months
+
+           interest_for_months = interest/12;
+
+           interest_for_months = (interest_for_months * months);
+
+
+            /**
+                // Calculating interest per month
+                const interest = (amount * (rate * 0.01)) / months;
+                
+                // Calculating total payment
+                const total = ((amount / months) + interest).toFixed(2);            
+            
+             */
+
+        }
+        return interest_for_months;
+    }
+
+    /******************************************************/
+    /*        Pay  Interest for x months                  */
+    /*                                                    */
+    /******************************************************/
+    function payInterest(uint pool_id, uint months,uint amount) external returns (uint)
+    {
+
+        tvm.accept();
+        tvm.rawReserve(4 ever, 0);
+
+        BarrowPool pool;
+        uint interest = 0;
+
+        if(pool_id <= (transferCount-1) )
+        {
+           pool = barrowPoolMap[pool_id];
+
+           uint monthsperyear = 12;
+
+           uint rate_of_interest = pool.interestrate/monthsperyear;
+
+           interest = pool.loanamount * rate_of_interest * months;
+
+           address[] contributers = LiquidityPoolContributionPercentage.keys();
+           uint128[] percentage_of_contribution = LiquidityPoolContributionPercentage.values();
+
+            uint support_percentage = 20;
+            uint percentage = 100;
+            uint initialSupport_amount = pool.loanamount * (support_percentage/percentage);
+
+            for (uint i = 0; i + 1 < contributers.length; ++i)
+            {
+                uint128 profit_amount  = percentage_of_contribution[i];
+                address send_to     = contributers[i];
+
+                //Send the profit amount to the contributers
+
+                this.sendTokens(send_to,profit_amount);
+                sendAmount[send_to] = profit_amount;
+
+            }
+
+        }
+        return interest;
+    }
+
+    /**********************************************************************************/
+    function getInterestShare(uint pool_id, uint months,uint amount) external view returns 
+    (address[],uint128[])
+    {
+        tvm.accept();
+        tvm.rawReserve(4 ever, 0);
+
+        return (sendAmount.keys(),sendAmount.values());
+    }
+     
+    /***********************************************************************************/
+
+    function getVotes(uint pool_id) external view returns (uint,uint,uint)
+    {
+
+        tvm.accept();
+        tvm.rawReserve(4 ever, 0);
+
+        uint _positiveVotes = 0;
+        uint _negativeVotes = 0;
+        uint _totalVotes = 0;        
+        if(pool_id <= (transferCount-1) )
+        {
+            _positiveVotes = positiveVotes[pool_id];
+            _negativeVotes = negativeVotes[pool_id];
+            _totalVotes = totalVotes[pool_id];
+
+        }
+
+        return (_positiveVotes,_negativeVotes,_totalVotes);
+
+    }
+
+    function vote4Pool(uint pool_id,uint userVotes, bool isPositiveVote) external returns (uint)
+    {
+
+        tvm.accept();
+        tvm.rawReserve(4 ever, 0);
+
+        BarrowPool pool;
+        uint _positiveVotes = 0;
+        uint _negativeVotes = 0;
+        uint _totalVotes = 0;
+
+        if(pool_id <= (transferCount-1) )
+        {
+            //pool = barrowPools[pool_id];
+            pool = barrowPoolMap[pool_id];
+
+            if(pool.status == "Voting")
+            {
+                if(isPositiveVote)
+                {
+                    _positiveVotes = positiveVotes[pool_id];
+                    _positiveVotes = _positiveVotes + userVotes;
+                    positiveVotes[pool_id] = _positiveVotes;
+                }
+                else
+                {
+                    _negativeVotes = negativeVotes[pool_id];
+                    _negativeVotes = _negativeVotes + userVotes;
+                    negativeVotes[pool_id] = _negativeVotes;                
+                }
+                _totalVotes = totalVotes[pool_id];
+                _totalVotes = _totalVotes + userVotes;
+                totalVotes[pool_id] = _totalVotes;                 
+            }
+
+            _totalVotes = totalVotes[pool_id];
+
+            if(_totalVotes >= pool.votesLimit)
+            {
+                 
+                BarrowPool updatePool = BarrowPool(pool.loanamount, pool.interestrate,  pool.tenure, pool.companyname, pool.website,pool.votesLimit,"Voting", pool.creator);
+
+                if(_positiveVotes > _negativeVotes)
+                {
+                    SelectedBarrowPoolID[successCount] = pool_id;
+                    successCount = successCount + 1;
+                    updatePool.status = "Accepted";
+                }
+                else
+                {
+                    updatePool.status = "Rejected";                    
+                }
+                barrowPoolMap[pool_id] = updatePool;                
+            }
+         }
+        return _totalVotes;
+    }
+
+    function getPoolStatus(uint pool_id) external view  returns (bool)
+    {
+
+        BarrowPool pool;
+        bool poolStatus = false;
+
+        if(pool_id <= (transferCount-1) )
+        {
+            //pool = barrowPools[pool_id];
+            pool = barrowPoolMap[pool_id];
+            
+            if(pool.status != "Voting")
+            {
+                poolStatus = true;
+            }
+        }
+        return poolStatus;
+    }
+
+
+    function sendTokens(address receiver, uint128 amount)  external view {  //externalMsg view {  
+
+        // Transfer fund from escrow wallet to the user
+        uint128 _transferAmount = 0;
+        _transferAmount = amount * 100;  // Multiple with decimals
+        if (_transferAmount > _supply) {
+            msg.sender.transfer({ value: 0, flag: 128, bounce: false});
+        } else {
+            TvmCell empty;
+            // here we just operate with deployed in constructor wallet. owner should provide token supply on this wallet before sales!
+            ITokenWallet(wallet).transfer{ value: 0, flag: 128 }(
+                _transferAmount,
+                receiver,
+                0.1 ever, // this parameter allows to deploy wallet for user, if it's not deployed yet. (fee takes from message so will be payed by user)
+                receiver,
+                false,
+                empty
+            );
+        }
+        tvm.rawReserve(3 ever, 0);
+    }
+ 
+
+
+    function onDeployWallet(address _wallet) public {
+        wallet = _wallet;
+    }
+
+    function getSupply() external view returns (uint256)
+    {
+        
+        return _supply;
+            
+    }   
+    function getWallet() external view returns (address)
+    {
+        
+        return wallet;
+            
+    }    
+
+    function onAcceptTokensTransfer(
+        address tokenRoot,
+        uint128 amount,
+        address sender,
+        address senderWallet,
+        address remainingGasTo,
+        TvmCell payload
+    ) external override {
+        require(msg.sender == wallet, 103);
+        require(tokenRoot == root, 103);
+
+        emit ThankYou(sender, amount);
+
+        // disables warnings
+        tokenRoot;
+        senderWallet;
+        remainingGasTo;
+        payload;
+    }
+
+ 
+
+
+
+ 
+    
+ 
+
+
+
+
+
+}

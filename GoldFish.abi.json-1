@@ -1,0 +1,471 @@
+{
+	"ABI version": 2,
+	"version": "2.2",
+	"header": ["pubkey", "time", "expire"],
+	"functions": [
+		{
+			"name": "constructor",
+			"inputs": [
+				{"name":"_state","type":"uint256"},
+				{"name":"root_","type":"address"},
+				{"name":"supply","type":"uint256"},
+				{"name":"rate","type":"uint128"},
+				{"name":"codeNft","type":"cell"},
+				{"name":"codeIndex","type":"cell"},
+				{"name":"codeIndexBasis","type":"cell"},
+				{"name":"json","type":"string"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "newBarrowPool",
+			"inputs": [
+				{"name":"_loanamount","type":"uint256"},
+				{"name":"_interestrate","type":"uint256"},
+				{"name":"_tenure","type":"uint256"},
+				{"name":"_companyname","type":"string"},
+				{"name":"_website","type":"string"},
+				{"name":"_votesLimit","type":"uint256"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "balance",
+			"inputs": [
+				{"name":"answerId","type":"uint32"}
+			],
+			"outputs": [
+				{"name":"value0","type":"uint128"}
+			]
+		},
+		{
+			"name": "checkPoolExists",
+			"inputs": [
+				{"name":"pool_id","type":"uint256"}
+			],
+			"outputs": [
+				{"name":"value0","type":"string"}
+			]
+		},
+		{
+			"name": "getBarrowPool",
+			"inputs": [
+				{"name":"pool_id","type":"uint256"}
+			],
+			"outputs": [
+				{"components":[{"name":"loanamount","type":"uint256"},{"name":"interestrate","type":"uint256"},{"name":"tenure","type":"uint256"},{"name":"companyname","type":"string"},{"name":"website","type":"string"},{"name":"votesLimit","type":"uint256"},{"name":"status","type":"string"},{"name":"creator","type":"address"}],"name":"value0","type":"tuple"}
+			]
+		},
+		{
+			"name": "addLiquidity",
+			"inputs": [
+				{"name":"amount","type":"uint256"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "getLiquidity",
+			"inputs": [
+				{"name":"_wallet","type":"address"}
+			],
+			"outputs": [
+				{"name":"value0","type":"uint256"},
+				{"name":"value1","type":"uint256"},
+				{"name":"value2","type":"uint128"}
+			]
+		},
+		{
+			"name": "addSupport",
+			"inputs": [
+				{"name":"amount","type":"uint256"},
+				{"name":"pool_id","type":"uint256"}
+			],
+			"outputs": [
+				{"name":"value0","type":"string"}
+			]
+		},
+		{
+			"name": "getPoolAmount",
+			"inputs": [
+				{"name":"pool_id","type":"uint256"}
+			],
+			"outputs": [
+				{"name":"value0","type":"uint256"}
+			]
+		},
+		{
+			"name": "getInterestAmount",
+			"inputs": [
+				{"name":"pool_id","type":"uint256"},
+				{"name":"months","type":"uint256"}
+			],
+			"outputs": [
+				{"name":"value0","type":"uint256"}
+			]
+		},
+		{
+			"name": "payInterest",
+			"inputs": [
+				{"name":"pool_id","type":"uint256"},
+				{"name":"months","type":"uint256"},
+				{"name":"amount","type":"uint256"}
+			],
+			"outputs": [
+				{"name":"value0","type":"uint256"}
+			]
+		},
+		{
+			"name": "getInterestShare",
+			"inputs": [
+				{"name":"pool_id","type":"uint256"},
+				{"name":"months","type":"uint256"},
+				{"name":"amount","type":"uint256"}
+			],
+			"outputs": [
+				{"name":"value0","type":"address[]"},
+				{"name":"value1","type":"uint128[]"}
+			]
+		},
+		{
+			"name": "getVotes",
+			"inputs": [
+				{"name":"pool_id","type":"uint256"}
+			],
+			"outputs": [
+				{"name":"value0","type":"uint256"},
+				{"name":"value1","type":"uint256"},
+				{"name":"value2","type":"uint256"}
+			]
+		},
+		{
+			"name": "vote4Pool",
+			"inputs": [
+				{"name":"pool_id","type":"uint256"},
+				{"name":"userVotes","type":"uint256"},
+				{"name":"isPositiveVote","type":"bool"}
+			],
+			"outputs": [
+				{"name":"value0","type":"uint256"}
+			]
+		},
+		{
+			"name": "getPoolStatus",
+			"inputs": [
+				{"name":"pool_id","type":"uint256"}
+			],
+			"outputs": [
+				{"name":"value0","type":"bool"}
+			]
+		},
+		{
+			"name": "sendTokens",
+			"inputs": [
+				{"name":"receiver","type":"address"},
+				{"name":"amount","type":"uint128"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "onDeployWallet",
+			"inputs": [
+				{"name":"_wallet","type":"address"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "getSupply",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"value0","type":"uint256"}
+			]
+		},
+		{
+			"name": "getWallet",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"value0","type":"address"}
+			]
+		},
+		{
+			"name": "onAcceptTokensTransfer",
+			"inputs": [
+				{"name":"tokenRoot","type":"address"},
+				{"name":"amount","type":"uint128"},
+				{"name":"sender","type":"address"},
+				{"name":"senderWallet","type":"address"},
+				{"name":"remainingGasTo","type":"address"},
+				{"name":"payload","type":"cell"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "indexBasisCode",
+			"inputs": [
+				{"name":"answerId","type":"uint32"}
+			],
+			"outputs": [
+				{"name":"code","type":"cell"}
+			]
+		},
+		{
+			"name": "indexBasisCodeHash",
+			"inputs": [
+				{"name":"answerId","type":"uint32"}
+			],
+			"outputs": [
+				{"name":"hash","type":"uint256"}
+			]
+		},
+		{
+			"name": "resolveIndexBasis",
+			"inputs": [
+				{"name":"answerId","type":"uint32"}
+			],
+			"outputs": [
+				{"name":"indexBasis","type":"address"}
+			]
+		},
+		{
+			"name": "indexCode",
+			"inputs": [
+				{"name":"answerId","type":"uint32"}
+			],
+			"outputs": [
+				{"name":"code","type":"cell"}
+			]
+		},
+		{
+			"name": "indexCodeHash",
+			"inputs": [
+				{"name":"answerId","type":"uint32"}
+			],
+			"outputs": [
+				{"name":"hash","type":"uint256"}
+			]
+		},
+		{
+			"name": "getJson",
+			"inputs": [
+				{"name":"answerId","type":"uint32"}
+			],
+			"outputs": [
+				{"name":"json","type":"string"}
+			]
+		},
+		{
+			"name": "totalSupply",
+			"inputs": [
+				{"name":"answerId","type":"uint32"}
+			],
+			"outputs": [
+				{"name":"count","type":"uint128"}
+			]
+		},
+		{
+			"name": "nftCode",
+			"inputs": [
+				{"name":"answerId","type":"uint32"}
+			],
+			"outputs": [
+				{"name":"code","type":"cell"}
+			]
+		},
+		{
+			"name": "nftCodeHash",
+			"inputs": [
+				{"name":"answerId","type":"uint32"}
+			],
+			"outputs": [
+				{"name":"codeHash","type":"uint256"}
+			]
+		},
+		{
+			"name": "nftAddress",
+			"inputs": [
+				{"name":"answerId","type":"uint32"},
+				{"name":"id","type":"uint256"}
+			],
+			"outputs": [
+				{"name":"nft","type":"address"}
+			]
+		},
+		{
+			"name": "supportsInterface",
+			"inputs": [
+				{"name":"answerId","type":"uint32"},
+				{"name":"interfaceID","type":"uint32"}
+			],
+			"outputs": [
+				{"name":"value0","type":"bool"}
+			]
+		},
+		{
+			"name": "state",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"state","type":"uint256"}
+			]
+		},
+		{
+			"name": "_supply",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"_supply","type":"uint256"}
+			]
+		},
+		{
+			"name": "_rate",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"_rate","type":"uint128"}
+			]
+		},
+		{
+			"name": "transferCount",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"transferCount","type":"uint256"}
+			]
+		},
+		{
+			"name": "successCount",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"successCount","type":"uint256"}
+			]
+		}
+	],
+	"data": [
+		{"key":1,"name":"nonce","type":"uint256"},
+		{"key":2,"name":"owner","type":"uint256"}
+	],
+	"events": [
+		{
+			"name": "StateChange",
+			"inputs": [
+				{"name":"_state","type":"uint256"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "barrowPoolCreated",
+			"inputs": [
+				{"components":[{"name":"loanamount","type":"uint256"},{"name":"interestrate","type":"uint256"},{"name":"tenure","type":"uint256"},{"name":"companyname","type":"string"},{"name":"website","type":"string"},{"name":"votesLimit","type":"uint256"},{"name":"status","type":"string"},{"name":"creator","type":"address"}],"name":"_hash_value","type":"tuple"},
+				{"name":"transfers","type":"uint256"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "barrowPoolFetch",
+			"inputs": [
+				{"components":[{"name":"loanamount","type":"uint256"},{"name":"interestrate","type":"uint256"},{"name":"tenure","type":"uint256"},{"name":"companyname","type":"string"},{"name":"website","type":"string"},{"name":"votesLimit","type":"uint256"},{"name":"status","type":"string"},{"name":"creator","type":"address"}],"name":"_hash_value","type":"tuple"},
+				{"name":"transfers","type":"uint256"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "poolSupport",
+			"inputs": [
+				{"components":[{"name":"loanamount","type":"uint256"},{"name":"interestrate","type":"uint256"},{"name":"tenure","type":"uint256"},{"name":"companyname","type":"string"},{"name":"website","type":"string"},{"name":"votesLimit","type":"uint256"},{"name":"status","type":"string"},{"name":"creator","type":"address"}],"name":"pool","type":"tuple"},
+				{"name":"pool_id","type":"uint256"},
+				{"name":"message","type":"string"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "ThankYou",
+			"inputs": [
+				{"name":"sender","type":"address"},
+				{"name":"amount","type":"uint128"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "NewWallet",
+			"inputs": [
+				{"name":"some","type":"address"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "NftCreated",
+			"inputs": [
+				{"name":"id","type":"uint256"},
+				{"name":"nft","type":"address"},
+				{"name":"owner","type":"address"},
+				{"name":"manager","type":"address"},
+				{"name":"creator","type":"address"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "NftBurned",
+			"inputs": [
+				{"name":"id","type":"uint256"},
+				{"name":"nft","type":"address"},
+				{"name":"owner","type":"address"},
+				{"name":"manager","type":"address"}
+			],
+			"outputs": [
+			]
+		}
+	],
+	"fields": [
+		{"name":"_pubkey","type":"uint256"},
+		{"name":"_timestamp","type":"uint64"},
+		{"name":"_constructorFlag","type":"bool"},
+		{"name":"_supportedInterfaces","type":"optional(cell)"},
+		{"name":"_codeNft","type":"cell"},
+		{"name":"_totalSupply","type":"uint128"},
+		{"name":"_json","type":"string"},
+		{"name":"_codeIndex","type":"cell"},
+		{"name":"_codeIndexBasis","type":"cell"},
+		{"name":"_indexDeployValue","type":"uint128"},
+		{"name":"_indexDestroyValue","type":"uint128"},
+		{"name":"_deployIndexBasisValue","type":"uint128"},
+		{"name":"_remainOnNft","type":"uint128"},
+		{"name":"nonce","type":"uint256"},
+		{"name":"owner","type":"uint256"},
+		{"name":"root","type":"address"},
+		{"name":"wallet","type":"address"},
+		{"name":"state","type":"uint256"},
+		{"name":"_supply","type":"uint256"},
+		{"name":"_rate","type":"uint128"},
+		{"name":"transferCount","type":"uint256"},
+		{"name":"successCount","type":"uint256"},
+		{"components":[{"name":"loanamount","type":"uint256"},{"name":"interestrate","type":"uint256"},{"name":"tenure","type":"uint256"},{"name":"companyname","type":"string"},{"name":"website","type":"string"},{"name":"votesLimit","type":"uint256"},{"name":"status","type":"string"},{"name":"creator","type":"address"}],"name":"barrowPools","type":"tuple[]"},
+		{"name":"transferAmount","type":"uint128[]"},
+		{"components":[{"name":"loanamount","type":"uint256"},{"name":"interestrate","type":"uint256"},{"name":"tenure","type":"uint256"},{"name":"companyname","type":"string"},{"name":"website","type":"string"},{"name":"votesLimit","type":"uint256"},{"name":"status","type":"string"},{"name":"creator","type":"address"}],"name":"barrowPoolMap","type":"map(uint256,tuple)"},
+		{"name":"positiveVotes","type":"uint256[]"},
+		{"name":"negativeVotes","type":"uint256[]"},
+		{"name":"totalVotes","type":"uint256[]"},
+		{"name":"SelectedBarrowPoolID","type":"uint256[]"},
+		{"name":"hashMap","type":"map(uint256,uint256)"},
+		{"name":"LiquidityPool","type":"map(address,uint256)"},
+		{"name":"LiquidityPoolContributionPercentage","type":"map(address,uint128)"},
+		{"name":"BarrowPoolAmount","type":"map(uint256,uint256)"},
+		{"name":"sendAmount","type":"map(address,uint128)"},
+		{"name":"totalLiquidityAmount","type":"uint256"},
+		{"name":"balance_","type":"uint128"}
+	]
+}

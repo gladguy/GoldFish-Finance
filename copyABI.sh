@@ -1,0 +1,2 @@
+mv /home/waheed/venom/GoldFishFinance/goldfish-front-end/src/abi/GoldFish.abi.json GoldFish.abi.json-1
+cp /home/waheed/venom/GoldFishFinance/build/GoldFish.abi.json /home/waheed/venom/GoldFishFinance/goldfish-front-end/src/abi

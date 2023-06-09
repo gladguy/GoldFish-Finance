@@ -1,0 +1,128 @@
+pragma ever-solidity >= 0.62.0;
+pragma AbiHeader expire;
+pragma AbiHeader pubkey;
+
+import "tip3/contracts/interfaces/IAcceptTokensTransferCallback.sol";
+import "tip3/contracts/interfaces/ITokenRoot.sol";
+import "tip3/contracts/interfaces/ITokenWallet.sol";
+
+import "tip4/contracts/CollectionBase.tsol";
+
+ 
+abstract contract Upgradable {
+    
+
+    function upgrade(TvmCell newcode) public virtual {
+        require(msg.pubkey() == tvm.pubkey(), 101);
+        tvm.accept();
+        tvm.commit();
+        tvm.setcode(newcode);
+        tvm.setCurrentCode(newcode);
+        onCodeUpgrade();
+    }
+
+    function onCodeUpgrade() internal virtual;
+}
+ 
+
+contract CBDC_Token is IAcceptTokensTransferCallback, CollectionBase,Upgradable {
+    uint static nonce;
+    uint256 static owner;
+
+    address root;
+    address wallet;  // Used for transfer
+    uint public state;
+    uint256 public _supply; // How much tokens will be distributed (with decimals)
+    uint128 public _rate; // How much tokens buyer will receive for 1 nanovenom (1*10^9)    
+    
+    uint public transferCount; // Max value 65535
+    uint256 public hash_value;
+
+    string public json_1;
+    string public json_2;
+
+
+    event StateChange(uint _state);
+    event HashChange(uint256 _hash_value);
+
+    event ThankYou(address sender, uint128 amount);
+    event NewWallet(address some);
+
+    constructor(
+        uint _state, address root_, 
+        uint256 supply,uint128 rate,
+        TvmCell codeNft, 
+        TvmCell codeIndex,
+        TvmCell codeIndexBasis,
+        string json) 
+        
+
+    CollectionBase(codeNft, codeIndex, codeIndexBasis, json) public {
+
+        tvm.accept();
+        root = root_;
+        _supply = supply;
+        _rate  = rate;
+        ITokenRoot(root).deployWallet{
+            value: 2_000_000_000,
+            callback: onDeployWallet
+        }(this, 1_000_000_000);
+
+        //sendRemainingGasTo.transfer({ value: 0, flag: 128, bounce: false });
+
+
+         
+        transferCount = _state;
+    }
+
+    function onCodeUpgrade() internal override {}  // Contract is upgradeable
+
+
+    function onDeployWallet(address _wallet) public {
+        wallet = _wallet;
+    }
+
+
+
+    function getSupply() external view returns (uint256)
+    {
+        return _supply;
+    }   
+    function getWallet() external view returns (address)
+    {
+        
+        return wallet;
+            
+    }    
+
+    function onAcceptTokensTransfer(
+        address tokenRoot,
+        uint128 amount,
+        address sender,
+        address senderWallet,
+        address remainingGasTo,
+        TvmCell payload
+    ) external override {
+        require(msg.sender == wallet, 103);
+        require(tokenRoot == root, 103);
+
+        emit ThankYou(sender, amount);
+
+        // disables warnings
+        tokenRoot;
+        senderWallet;
+        remainingGasTo;
+        payload;
+    }
+
+
+ 
+
+
+
+
+
+
+
+
+}
