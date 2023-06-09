@@ -1,40 +1,31 @@
-# Wenomunion 
+ 
+### GoldFish Finance
 
-Send and Receive tokens safely with Escrow
+GoldFish is a decentralized credit protocol that allows for crypto borrowing without crypto collateral—with loans instead fully collateralized off-chain.
 
-https://wenomunion.web.app/
 
-You need atleast one venom to claim the INR ( Indian Rupees)
+### 🐠 🐠 🐠 🐠 Stake Holders - Participants🐠 🐠 🐠 🐠
 
-Cross-Border payment solution
-Wenom Union is a hackathon project.
+ 1. **🙋🏾‍♂️ - 💵 -Borrowers**  - Create Borrowing Pool(LOAN)
 
-You can send and receive Venom based CBDC Tokens securely.
+	Borrowers request money in the protocol with their company profile and loan amount required, repayment period and interest rate willing to pay. 
+2. 👰🏻‍♀️ - 🛄 -**Angel Supporters**  - Early Supporters of LOAN  
+Angel Supporters are the early supporters of the Borrowers request, they take the risk and invest about 20% of the loan amount. And take 20% profit from the interest accumulated all in the smart contract.
+3. 🤵🏻‍♀️ - 💰 -**Investors**  - Invest in Borrowing Pool
+Investors, add their capitals to common liquidity pool , When the Borrowers supports a project above 20% remaining 80% shall be contributed from the liquidity pool. Smart contract shall automatically disperse the amount to the borrowing pool.  
+4. 👨‍👩‍👦‍👦 - 🗳️ -**Community Voters**  - Who Audits Borrowing Pool Profile
+Community members who may be an investor or Angel supporters, or common people who may hold certain amount of $GOLDFISH Token. A Borrowing Pool shall become eligible for investment only when the vote threshold is satisfied.
 
-# Use Case : Cross-border payments
+### Interest Payment
 
-## User Story
+ 1. Borrowers pay the interest and principal
+ 2. Based on the contribution amount interest shall be dispersed to the investors
+ 3. Principal shall be returned to the Liquidity Pool
+ 4. Angel Investors get 20% more profits for taking the risk in investment
+ 5. Angel Investors may be the first loss stake holders, after their money is lost the safe Investors money will be accounted.
 
-1. Bob is in Dubai  
-2. Bob Mother Linda is in India  
-3. Currency : INR  
-4. Bob wants to send money to his mother.  
-5. Now the User-action  
+### Technology used
 
-1. Bob logins to https://wenomunion.web.app/build with venom wallet  
-2. Have INR Tokens ( CBDC)  
-3. Inputs the amount of INR 1000 he wants to send to his mother  
-4. On Successful transfer, he receives a SECRET Code : WU-3080DAA8BC  
-5. Bob shares the code WU-3080DAA8BC with Linda  
-6. Linda visits a WenomUnion agent  
-7. Linda provides the code : WU-3080DAA8BC to the agent  
-8. Agent verify the code in https://wenomunion.web.app/build  
-9. Agent up on successful verification and withdraw of INR hands-over INR amount 1000  
-10. Linda happily receives the INR 1000  
-
-# Dapp 
-Dapp Web Application https://wenomunion.web.app/build  
-
-## VENOM Token INR 
-
-https://devnet.venomscan.com/accounts/0:65c3ff8fdd39c2487a9b0536c785ef8d528b1a6e8cefa9c2d03ddb1981255b6b/
+ 1. Venom Blockchain for deployment
+ 2. TypeScript
+ 3. TVM Language tsol
