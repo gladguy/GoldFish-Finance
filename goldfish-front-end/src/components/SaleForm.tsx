@@ -45,6 +45,9 @@ function SaleForm({ balance, venomConnect, address, provider, getBalance }: Prop
   const [poolStatus, setPoolStatus] = useState<string | undefined>("Pool is Waiting ⏰");
 
 
+  const [fullFunded, setFullyFunded] = useState<number | undefined>(0);
+
+
   const [borrowCreator, setBorrowCreator] = useState<string | undefined>();
 
   const [all_liquidity, setLiquidity] = useState<number | undefined>(0);
@@ -387,24 +390,50 @@ const getLiquidity = async () => {
     }    
 
     const {value0: poolStatus_  } = await contract.methods.getPoolStatus({pool_id} as never).call();
-    console.log("Pool Status  " + poolStatus_);
 
-    setPoolStatus(poolStatus_);
-    //123123
-    if(poolStatus_){
-      setPoolStatus("Pool is successful 🌟🌟🌟");
-    } 
-    else
-    {
-      setPoolStatus("Pool is Waiting ⏰");
-    }
-    
-    
     const i = 1;
     const {value0: pool_money } = await contract.methods.getPoolAmount({pool_id} as never).call();
     console.log(pool_id + " Pool money " + pool_money);
 
     setPoolMoney(Number(pool_money));
+    setFullyFunded(0);
+
+    if(borrowPool_.status === "Voting")
+    {
+      setPoolStatus("0");
+      setPoolStatus("Pool is Waiting ⏰");
+
+    }
+    else if (borrowPool_.status === "Accepted")
+    {
+      setPoolStatus("1");
+      setPoolStatus("Pool is Accepted 🌟🌟🌟");
+    }
+    else if (borrowPool_.status === "Rejected")
+    {
+      setPoolStatus("1");
+      setPoolStatus("Pool is Rejected 👎🏼👎🏼👎🏼");
+    }  
+    else 
+    {
+      setPoolStatus("1");
+      setPoolStatus("Fully Funded 🥳🥳🥳");
+      setFullyFunded(1);
+
+    }      
+
+    if(Number(borrowPool_.loanamount) <= Number(pool_money))
+    {
+      setPoolStatus("1");
+      setPoolStatus("Fully Funded 🥳🥳🥳");
+      setFullyFunded(1);
+
+    }    
+    console.log("Pool Status  " + poolStatus_);
+
+ 
+    
+    
 
     const support_percentage = 20;
     const percentage = 100;
@@ -882,6 +911,59 @@ const claimUserProfit = async () => {
 
 };
 
+
+const borrowFund = async () => {
+
+  if (!venomConnect || !address || !loanAmount  || !provider) return;
+  const userAddress = new Address(address);
+  const contractAddress = new Address("0:e12f91b73b66240dac499e95a956e80789cfcdaa7fbac1d1c0bb21eee2304bb0"); // Our Tokensale contract address
+  const contract = new provider.Contract(GoldFishAbi, contractAddress);
+
+  const deposit = new BigNumber(loanAmount).multipliedBy(1 ** 1).toString(); // Contract"s rate parameter is 1 venom = 10 tokens
+    // another 1 venom for connection. You will receive a change, as you remember
+  const amount = new BigNumber(deposit).plus(new BigNumber(1).multipliedBy(10 ** 9)).toString();
+  const gas = new BigNumber(15).multipliedBy(10 ** 7).toString(); // Contract"s rate parameter is 1 venom = 10 tokens
+
+  
+  try {
+
+    setStatusMsg("💸 Withdraw from Borrow Pool ");
+
+    const claimAmount = loanAmount; //Math.floor(Math.random() * 1000);
+
+    console.log("Claiming amount "+ claimAmount);
+
+    // Transfer Rupees method according to smart contract
+    const result = await contract.methods
+      .claimProfit({
+        amount : claimAmount
+      } as never)
+      .send({
+        from: userAddress,
+        amount: gas,
+        bounce: true,
+      });
+
+
+
+    if (result?.id?.lt && result?.endStatus === "active") {
+
+      const {value0: userTokenBalance } = await contract.methods.balance({answerId: 0} as never).call();
+
+      setStatusMsg("Withdraw Successful");
+      
+
+      console.log(result);
+
+      getDollarBalance();
+    }
+  } catch (e) {
+    
+    console.log(e);
+    setStatusMsg("Use rejected the transaction" );
+  }  
+};
+
 const LiquidityTransferDollars = async () => {
 
   if (!venomConnect || !address || !loanAmount  || !provider) return;
@@ -1146,9 +1228,11 @@ const LiquidityTransferDollars = async () => {
       <div className="item-info">
 
 
-
       <a className={!tenure ? "btn disabled" : "btn"} onClick={liquidity2BorrowPool}>
-          Withdraw Barrow Amount 💹
+          Approve from Liquidity 💹
+      </a>  
+      <a className={!fullFunded ? "btn disabled" : "btn"} onClick={borrowFund}>
+          Withdraw Barrow Amount 💹 
       </a>    
       <a className={!loanAmount ? "btn disabled" : "btn"} onClick={claimUserProfit}>
         Claim Profit 🤑
