@@ -84,6 +84,15 @@
 				{"name":"pool_id","type":"uint256"}
 			],
 			"outputs": [
+			]
+		},
+		{
+			"name": "addSupportFund",
+			"inputs": [
+				{"name":"amount","type":"uint256"},
+				{"name":"pool_id","type":"uint256"}
+			],
+			"outputs": [
 				{"name":"value0","type":"string"}
 			]
 		},
@@ -118,11 +127,17 @@
 			]
 		},
 		{
+			"name": "claimProfit",
+			"inputs": [
+				{"name":"amount","type":"uint256"}
+			],
+			"outputs": [
+				{"name":"value0","type":"uint256"}
+			]
+		},
+		{
 			"name": "getInterestShare",
 			"inputs": [
-				{"name":"pool_id","type":"uint256"},
-				{"name":"months","type":"uint256"},
-				{"name":"amount","type":"uint256"}
 			],
 			"outputs": [
 				{"name":"value0","type":"address[]"},
@@ -149,6 +164,15 @@
 			],
 			"outputs": [
 				{"name":"value0","type":"uint256"}
+			]
+		},
+		{
+			"name": "transferFromLiquidity",
+			"inputs": [
+				{"name":"amount","type":"uint256"},
+				{"name":"pool_id","type":"uint256"}
+			],
+			"outputs": [
 			]
 		},
 		{
@@ -381,6 +405,16 @@
 		},
 		{
 			"name": "poolSupport",
+			"inputs": [
+				{"components":[{"name":"loanamount","type":"uint256"},{"name":"interestrate","type":"uint256"},{"name":"tenure","type":"uint256"},{"name":"companyname","type":"string"},{"name":"website","type":"string"},{"name":"votesLimit","type":"uint256"},{"name":"status","type":"string"},{"name":"creator","type":"address"}],"name":"pool","type":"tuple"},
+				{"name":"pool_id","type":"uint256"},
+				{"name":"message","type":"string"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "poolFunded",
 			"inputs": [
 				{"components":[{"name":"loanamount","type":"uint256"},{"name":"interestrate","type":"uint256"},{"name":"tenure","type":"uint256"},{"name":"companyname","type":"string"},{"name":"website","type":"string"},{"name":"votesLimit","type":"uint256"},{"name":"status","type":"string"},{"name":"creator","type":"address"}],"name":"pool","type":"tuple"},
 				{"name":"pool_id","type":"uint256"},

@@ -1,0 +1,14 @@
+This contract working perfectly
+// 0:d286cf09d2cb12ea2e19e1fbb9a9074120be659c1aa53ac0a2f894eb913b6997
+
+
+
+Claim profit
+Add amount frm liquidity
+0:8b3096b0e8b635fd5a2533af503334f65b0c183fca808970bb791d8e2a9a9e4c
+
+Add
+0:119f6d13cd45045ff691b7002df71c8cfa3f5d8ef7d133f095f3ef52b50e6002
+
+Transfer from transferFromLiquidity / claimProfit with amount
+0:e12f91b73b66240dac499e95a956e80789cfcdaa7fbac1d1c0bb21eee2304bb0

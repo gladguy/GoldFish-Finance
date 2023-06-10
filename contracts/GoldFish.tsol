@@ -29,6 +29,7 @@ contract GoldFish is IAcceptTokensTransferCallback, CollectionBase {
     event barrowPoolCreated(BarrowPool _hash_value, uint transfers);
     event barrowPoolFetch(BarrowPool _hash_value, uint transfers);
     event poolSupport(BarrowPool pool, uint pool_id,string message);
+    event poolFunded(BarrowPool pool, uint pool_id,string message);
 
 
     event ThankYou(address sender, uint128 amount);
@@ -200,7 +201,7 @@ contract GoldFish is IAcceptTokensTransferCallback, CollectionBase {
 
         totalLiquidityAmount = totalLiquidityAmount + amount;
 
-        uint contributionPercentage = (_total / totalLiquidityAmount) * 100;
+        uint contributionPercentage = (_total / (totalLiquidityAmount * 100));
         LiquidityPoolContributionPercentage[msg.sender] = uint128(contributionPercentage);
     }
 
@@ -213,11 +214,43 @@ contract GoldFish is IAcceptTokensTransferCallback, CollectionBase {
 
         return (totalLiquidityAmount,LiquidityPool[msg.sender],LiquidityPoolContributionPercentage[msg.sender]);
     }
+
+
+    function addSupport(uint amount , uint pool_id) external 
+    {
+
+        tvm.accept();
+        tvm.rawReserve(4 ever, 0);
+
+        BarrowPool pool;
+        string message = "addSupport";
+        if(pool_id <= (transferCount-1) )
+        {
+            uint _amount = 0;
+            uint _totalAmount = 0;
+            pool = barrowPoolMap[pool_id];
+
+            uint loanamount = pool.loanamount;
+
+            if(pool.status == "Accepted")
+            {
+                if(BarrowPoolAmount.exists(pool_id))
+                {
+                    _amount = BarrowPoolAmount[pool_id];
+                }        
+                _totalAmount = amount + _amount;
+                BarrowPoolAmount[pool_id] = _totalAmount;
+            }
+        }
+        emit poolSupport(pool, pool_id,message);
+    }    
+
+
     /******************************************************/
     /*        Support a Barrow Request                    */
     /*        Role : Supporter - who support early 20%    */
     /******************************************************/
-    function addSupport(uint amount , uint pool_id) external returns (string)
+    function addSupportFund(uint amount , uint pool_id) external returns (string)
     {
         BarrowPool pool;
         string message = "";
@@ -240,7 +273,7 @@ contract GoldFish is IAcceptTokensTransferCallback, CollectionBase {
 
                 uint support_percentage = 20;
                 uint percentage = 100;
-                uint initialSupport_amount = loanamount * (support_percentage/percentage);
+                uint initialSupport_amount = (loanamount * support_percentage)/percentage;
 
                 if(_totalAmount >= initialSupport_amount)
                 {
@@ -314,16 +347,6 @@ contract GoldFish is IAcceptTokensTransferCallback, CollectionBase {
 
            interest_for_months = (interest_for_months * months);
 
-
-            /**
-                // Calculating interest per month
-                const interest = (amount * (rate * 0.01)) / months;
-                
-                // Calculating total payment
-                const total = ((amount / months) + interest).toFixed(2);            
-            
-             */
-
         }
         return interest_for_months;
     }
@@ -356,16 +379,14 @@ contract GoldFish is IAcceptTokensTransferCallback, CollectionBase {
 
             uint support_percentage = 20;
             uint percentage = 100;
-            uint initialSupport_amount = pool.loanamount * (support_percentage/percentage);
+            uint initialSupport_amount = (pool.loanamount * support_percentage)/percentage;
 
             for (uint i = 0; i + 1 < contributers.length; ++i)
             {
-                uint128 profit_amount  = percentage_of_contribution[i];
-                address send_to     = contributers[i];
+                uint128 profit_amount   = percentage_of_contribution[i];
+                address send_to         = contributers[i];
 
                 //Send the profit amount to the contributers
-
-                this.sendTokens(send_to,profit_amount);
                 sendAmount[send_to] = profit_amount;
 
             }
@@ -373,9 +394,20 @@ contract GoldFish is IAcceptTokensTransferCallback, CollectionBase {
         }
         return interest;
     }
-
     /**********************************************************************************/
-    function getInterestShare(uint pool_id, uint months,uint amount) external view returns 
+    function claimProfit(uint amount) external returns (uint)
+    {
+        uint128 profitAmount = sendAmount[msg.sender];  
+        uint128 amount_ = uint128(amount);
+        if(profitAmount <= 0)
+        {
+            profitAmount = amount_; // Sample amount
+        } 
+        profitAmount = amount_;  
+        this.sendTokens(msg.sender,profitAmount);
+    }
+    /**********************************************************************************/
+    function getInterestShare() external view returns 
     (address[],uint128[])
     {
         tvm.accept();
@@ -465,6 +497,42 @@ contract GoldFish is IAcceptTokensTransferCallback, CollectionBase {
         return _totalVotes;
     }
 
+
+    function transferFromLiquidity(uint amount, uint pool_id) external 
+    {
+
+        tvm.accept();
+        tvm.rawReserve(4 ever, 0);
+
+        BarrowPool pool;
+        string message = "Fully transfering from the Liquidity to the Barrowing Pool";
+        if(pool_id <= (transferCount-1) )
+        {
+            uint _amount = 0;
+            uint _totalAmount = 0;
+            pool = barrowPoolMap[pool_id];
+
+            uint loanamount = pool.loanamount;
+
+            if(pool.status == "Accepted")
+            {
+                if(BarrowPoolAmount.exists(pool_id))
+                {
+                    _amount = BarrowPoolAmount[pool_id];
+                }        
+                _totalAmount = amount + _amount;
+                BarrowPoolAmount[pool_id] = _totalAmount;
+            }
+                BarrowPool updatePool = BarrowPool(pool.loanamount, pool.interestrate,  pool.tenure, pool.companyname, pool.website,pool.votesLimit,"Voting", pool.creator);
+                updatePool.status = "Fully Funded"; 
+                barrowPoolMap[pool_id] = updatePool;  
+                pool = barrowPoolMap[pool_id];
+                        
+        }
+        emit poolFunded(pool, pool_id,message);
+    } 
+
+
     function getPoolStatus(uint pool_id) external view  returns (bool)
     {
 
@@ -476,7 +544,7 @@ contract GoldFish is IAcceptTokensTransferCallback, CollectionBase {
             //pool = barrowPools[pool_id];
             pool = barrowPoolMap[pool_id];
             
-            if(pool.status != "Voting")
+            if(pool.status != "Voting" || pool.status != "Fully Funded")
             {
                 poolStatus = true;
             }
@@ -504,7 +572,7 @@ contract GoldFish is IAcceptTokensTransferCallback, CollectionBase {
                 empty
             );
         }
-        tvm.rawReserve(3 ever, 0);
+        tvm.rawReserve(5 ever, 0);
     }
  
 

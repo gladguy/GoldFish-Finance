@@ -10,15 +10,13 @@ import { Address, ProviderRpcClient,Contract } from "everscale-inpage-provider";
 import BigNumber from "bignumber.js";
 
 // Importing of our contract ABI from smart-contract build action. Of cource we need ABI for contracts calls.
-import tokenSaleAbi from "../abi/Tokensale.abi.json";
 
-import WenomUnionAbi from "../abi/GoldFish.abi.json";
+import GoldFishAbi from "../abi/GoldFish.abi.json";
 
 import TokenWallet from "../abi/TokenWallet.abi.json";
 import TokenRootAbi from "../abi/TokenRoot.abi.json";
 
-import IndianRupee from "../abi/IndiaRupee.abi.json";
-import AddTokenImg from "../styles/img/add_token.svg";
+import Dollar from "../abi/Dollar.abi.json";
 
 type Props = {
   balance: string | undefined;
@@ -47,21 +45,28 @@ function SaleForm({ balance, venomConnect, address, provider, getBalance }: Prop
   const [poolStatus, setPoolStatus] = useState<string | undefined>("Pool is Waiting ⏰");
 
 
-  const [barrowCreator, setBarrowCreator] = useState<string | undefined>();
+  const [borrowCreator, setBorrowCreator] = useState<string | undefined>();
 
-  const [all_liquidity, setLiquidity] = useState<number | undefined>();
+  const [all_liquidity, setLiquidity] = useState<number | undefined>(0);
   const [postiveVotes, setPVotes] = useState<number | undefined>();
   const [negativeVotes, setNVotes] = useState<number | undefined>();
   const [totalVotes, setTVotes] = useState<number | undefined>();
-  const [barrow_amount, setBarrowAmount] = useState<number | undefined>();
+  const [borrow_amount, setBorrowAmount] = useState<number | undefined>();
   const [monthly_interest, setInterestMonth] = useState<number | undefined>(0);
 
+  const [isCreator, setIsCreator] = useState<number | undefined>(0);
+  const [poolMoney, setPoolMoney] = useState<number | undefined>(0);
 
+  const [isBackerSupported, setBackerSupported] = useState<number | undefined>(0);
+
+  const [liquidityFundTransfer, setLiquidityTransfer] = useState<number | undefined>(0);
+
+  
   const [RupeeBalance, setBalance] = useState<string | undefined>("0");
   const [companyNameDisplay, setcompanyNameDisplay] = useState<string | undefined>("");
 
 
-  var barrowPool_ = {
+  var borrowPool_ = {
     "loanamount": "50000",
     "interestrate": "12",
     "tenure": "12",
@@ -72,7 +77,7 @@ function SaleForm({ balance, venomConnect, address, provider, getBalance }: Prop
     "creator": "0:2f35c41d7a709631fd27b20e9d78d3b36ea3f82008987698bb7e7bbd7f9bc76a"
 };
 
-  const [statusMsg, setStatusMsg] = useState<string | undefined>("Enter the amount for transfer or To Withdraw secret code");
+  const [statusMsg, setStatusMsg] = useState<string | undefined>("Welcome to GoldFish Finance 🐠");
 
 
   const onChangeLoanAmount = (e: string) => {
@@ -107,9 +112,9 @@ function SaleForm({ balance, venomConnect, address, provider, getBalance }: Prop
     if (e === "") setVotes(undefined);
     setVotes(Number(e));
 
-    if(Number(e) > 500)
+    if(Number(e) > 1500)
     {
-      setVotes(500);
+      setVotes(1500);
     }
     else
     {
@@ -125,9 +130,9 @@ function SaleForm({ balance, venomConnect, address, provider, getBalance }: Prop
 
   const onChangeTenure = (e: string) => {
     if (e === "") setTenure(undefined);
-    if(Number(e) > 24)
+    if(Number(e) > 36)
     {
-      setTenure(24);
+      setTenure(36);
     }
     else
     {
@@ -155,13 +160,13 @@ function SaleForm({ balance, venomConnect, address, provider, getBalance }: Prop
 
     const userAddress = new Address(address);
   
-    const TokenRootContractAddress = new Address("0:65c3ff8fdd39c2487a9b0536c785ef8d528b1a6e8cefa9c2d03ddb1981255b6b")
+    const TokenRootContractAddress = new Address("0:f7c7581ddf1f1600d961e22dd21e1a21216468f3dd682f58c3cd2e5c5cf3e8e0")
     const tokenRootContract = new provider.Contract(TokenRootAbi, TokenRootContractAddress);
   
     const {value0: userTokenWalletAddress} = await tokenRootContract.methods.walletOf({answerId: 0, walletOwner: userAddress} as never).call();
     const contract = new provider.Contract(TokenWallet, userTokenWalletAddress);
     const {value0: userTokenBalance } = await contract.methods.balance({answerId: 0} as never).call();
-    const inr_balance = new BigNumber(userTokenBalance).dividedToIntegerBy(10**2); 
+    const dollar_balance = new BigNumber(userTokenBalance).dividedToIntegerBy(10**2); 
 
     setloanAmount(Number(12));
   }
@@ -171,7 +176,7 @@ function SaleForm({ balance, venomConnect, address, provider, getBalance }: Prop
     console.log(provider?.addAsset({
       account: new Address(address as string), // user's wallet address
       params: {
-        rootContract: new Address("0:65c3ff8fdd39c2487a9b0536c785ef8d528b1a6e8cefa9c2d03ddb1981255b6b"), // TokenRoot address
+        rootContract: new Address("0:f7c7581ddf1f1600d961e22dd21e1a21216468f3dd682f58c3cd2e5c5cf3e8e0"), // TokenRoot address
       },
       type: "tip3_token", // tip3 - is a standart we use
     }))
@@ -184,21 +189,24 @@ function SaleForm({ balance, venomConnect, address, provider, getBalance }: Prop
 
 
   const negativeVote = async () => {
-    if (!venomConnect || !address || !loanAmount || !provider) return;
+    if (!venomConnect || !address || !loanAmount || !poolid || !provider) return;
     const userAddress = new Address(address);
-    const contractAddress = new Address("0:d286cf09d2cb12ea2e19e1fbb9a9074120be659c1aa53ac0a2f894eb913b6997"); // Our Tokensale contract address
-    const contract = new provider.Contract(WenomUnionAbi, contractAddress);
+    const contractAddress = new Address("0:e12f91b73b66240dac499e95a956e80789cfcdaa7fbac1d1c0bb21eee2304bb0"); // Our Tokensale contract address
+    const contract = new provider.Contract(GoldFishAbi, contractAddress);
   
     const deposit = new BigNumber(loanAmount).multipliedBy(1 ** 1).toString(); // Contract"s rate parameter is 1 venom = 10 tokens
       // another 1 venom for connection. You will receive a change, as you remember
     const amount = new BigNumber(deposit).plus(new BigNumber(1).multipliedBy(10 ** 9)).toString();
-  
+
+    const pool_id = (poolid-1);
+
+
     try {
         
       // and just call generatecompanyName method according to smart contract
       const result = await contract.methods
         .vote4Pool({
-          pool_id : poolid, 
+          pool_id : pool_id, 
           userVotes: 100,
           isPositiveVote : false
         } as never)
@@ -224,22 +232,24 @@ function SaleForm({ balance, venomConnect, address, provider, getBalance }: Prop
 
 
   const positiveVote = async () => {
-    if (!venomConnect || !address || !loanAmount || !provider) return;
+    if (!venomConnect || !address || !poolid  || !loanAmount || !provider) return;
     const userAddress = new Address(address);
-    const contractAddress = new Address("0:d286cf09d2cb12ea2e19e1fbb9a9074120be659c1aa53ac0a2f894eb913b6997"); // Our Tokensale contract address
-    const contract = new provider.Contract(WenomUnionAbi, contractAddress);
+    const contractAddress = new Address("0:e12f91b73b66240dac499e95a956e80789cfcdaa7fbac1d1c0bb21eee2304bb0"); // Our Tokensale contract address
+    const contract = new provider.Contract(GoldFishAbi, contractAddress);
   
     const deposit = new BigNumber(loanAmount).multipliedBy(1 ** 1).toString(); // Contract"s rate parameter is 1 venom = 10 tokens
       // another 1 venom for connection. You will receive a change, as you remember
     const amount = new BigNumber(deposit).plus(new BigNumber(1).multipliedBy(10 ** 9)).toString();
   
+    const pool_id = (poolid-1);
+
     try {
         
       console.log("Voting Positive");
       // and just call generatecompanyName method according to smart contract
       const result = await contract.methods
         .vote4Pool({
-          pool_id : poolid, 
+          pool_id : pool_id, 
           userVotes: 100,
           isPositiveVote : true
         } as never)
@@ -263,11 +273,11 @@ function SaleForm({ balance, venomConnect, address, provider, getBalance }: Prop
 
   
 
-const createBarrowPool = async () => {
+const createBorrowPool = async () => {
   if (!venomConnect || !address || !loanAmount || !provider) return;
   const userAddress = new Address(address);
-  const contractAddress = new Address("0:d286cf09d2cb12ea2e19e1fbb9a9074120be659c1aa53ac0a2f894eb913b6997"); // Our Tokensale contract address
-  const contract = new provider.Contract(WenomUnionAbi, contractAddress);
+  const contractAddress = new Address("0:e12f91b73b66240dac499e95a956e80789cfcdaa7fbac1d1c0bb21eee2304bb0"); // Our Tokensale contract address
+  const contract = new provider.Contract(GoldFishAbi, contractAddress);
 
   const deposit = new BigNumber(loanAmount).multipliedBy(1 ** 1).toString(); // Contract"s rate parameter is 1 venom = 10 tokens
     // another 1 venom for connection. You will receive a change, as you remember
@@ -296,7 +306,7 @@ const createBarrowPool = async () => {
     if (result?.id?.lt && result?.endStatus === "active") {
      
       console.log(result);
-      setStatusMsg("Barrow Pool created by " + companyName + "For the loan amount USD " + loanAmount + ".00");
+      setStatusMsg("Borrow Pool created by " + companyName + " For the loan amount USD " + loanAmount + ".00");
    }   
   } catch (e) {
     console.error(e);
@@ -304,18 +314,18 @@ const createBarrowPool = async () => {
 };
 
 // 123123
-// 0:d286cf09d2cb12ea2e19e1fbb9a9074120be659c1aa53ac0a2f894eb913b6997
+// 0:e12f91b73b66240dac499e95a956e80789cfcdaa7fbac1d1c0bb21eee2304bb0
 
 const getLiquidity = async () => {
   if (!venomConnect || !address || !poolid || !provider) return;
   
   const userAddress = new Address(address);
-  const contractAddress = new Address("0:d286cf09d2cb12ea2e19e1fbb9a9074120be659c1aa53ac0a2f894eb913b6997"); // Our Tokensale contract address
-  const contract = new provider.Contract(WenomUnionAbi, contractAddress);
+  const contractAddress = new Address("0:e12f91b73b66240dac499e95a956e80789cfcdaa7fbac1d1c0bb21eee2304bb0"); // Our Tokensale contract address
+  const contract = new provider.Contract(GoldFishAbi, contractAddress);
 
   try {
 
-    const pool_id = poolid;
+    const pool_id = (poolid-1);
     const answerId = 1;
 
     console.log(pool_id);
@@ -323,26 +333,30 @@ const getLiquidity = async () => {
     
     const {value0: userTokenBalance } = await contract.methods.getBarrowPool({pool_id} as never).call();
     
-    barrowPool_.companyname = "Bummy";
-    console.log(barrowPool_.companyname);
+    borrowPool_.companyname = "AbracaDabra";
+    console.log(borrowPool_.companyname);
 
     console.log(userTokenBalance);
 
-    barrowPool_ = userTokenBalance;
+    borrowPool_ = userTokenBalance;
 
-    console.log(barrowPool_.companyname);
+    console.log(borrowPool_.companyname);
 
-    setcompanyName(barrowPool_.companyname);
-    setTenure(Number(barrowPool_.tenure));
-    setWebsite(barrowPool_.website);
-    setVotes(Number(barrowPool_.votesLimit));
-    setloanAmount(Number(barrowPool_.loanamount));
-    setinterestRate(Number(barrowPool_.interestrate));
+    setcompanyName(borrowPool_.companyname);
+    setTenure(Number(borrowPool_.tenure));
+    setWebsite(borrowPool_.website);
+    setVotes(Number(borrowPool_.votesLimit));
+    setloanAmount(Number(borrowPool_.loanamount));
+    setinterestRate(Number(borrowPool_.interestrate));
 
-    console.log(barrowPool_.creator.toString());
-    setBarrowCreator((barrowPool_.creator.toString()));
+    console.log(borrowPool_.creator.toString());
+    setBorrowCreator((borrowPool_.creator.toString()));
 
-    const months = 1;
+
+  
+    
+
+    const months = 2;
 
     const {value0: interestAmount } = await contract.methods.getInterestAmount({pool_id,months} as never).call();
     console.log("Interest Amount " + interestAmount);
@@ -354,15 +368,28 @@ const getLiquidity = async () => {
     setLiquidity(Number(liquidityAmount));
 
     const {value0: poolVotes, value1: NVotes ,value2: TVotes  } = await contract.methods.getVotes({pool_id} as never).call();
-    console.log("Votes  " + poolVotes);
+    console.log("Votes 1 " + poolVotes);
 
     setPVotes(poolVotes);
     setNVotes(NVotes);
     setTVotes(TVotes);
 
+    setIsCreator(0);
+
+    if(borrowPool_.creator.toString() == address.toString())
+    {
+      setIsCreator(Number("1"));
+      console.log("Same user" + isCreator);
+    }
+    else
+    {
+      console.log("Different user" + isCreator);
+    }    
 
     const {value0: poolStatus_  } = await contract.methods.getPoolStatus({pool_id} as never).call();
     console.log("Pool Status  " + poolStatus_);
+
+    setPoolStatus(poolStatus_);
     //123123
     if(poolStatus_){
       setPoolStatus("Pool is successful 🌟🌟🌟");
@@ -373,10 +400,51 @@ const getLiquidity = async () => {
     }
     
     
-
+    const i = 1;
     const {value0: pool_money } = await contract.methods.getPoolAmount({pool_id} as never).call();
-    console.log("Pool money " + pool_money);
- 
+    console.log(pool_id + " Pool money " + pool_money);
+
+    setPoolMoney(Number(pool_money));
+
+    const support_percentage = 20;
+    const percentage = 100;
+    const backerAmount = (Number(borrowPool_.loanamount) * support_percentage)/percentage;
+
+    console.log("Backer " + backerAmount);
+    console.log("Pool Money " + pool_money);
+
+    setBackerSupported(0);  
+
+    const liquidityTransfer_ = Number(borrowPool_.loanamount) - (Number(pool_money));
+    setLiquidityTransfer(0);
+   
+    console.log("Liquidity Transfer ="+ liquidityTransfer_);
+
+
+
+    if(Number(pool_money) >= backerAmount)
+    {
+      console.log("20% is satisfied");
+      console.log("setBackerSupported - " + backerAmount +  pool_money);
+      setBackerSupported(1);
+      setLiquidityTransfer(liquidityTransfer_);
+
+    }
+    if ((Number(pool_money)) > (Number(borrowPool_.loanamount)))
+    {
+      setLiquidityTransfer(0);
+    }
+    console.log("Liquidity Transfer ="+ liquidityTransfer_  + " ..." + isBackerSupported);
+
+
+
+
+
+
+    const {value0: interestReceivers,value1: interestValues } = await contract.methods.getInterestShare({ } as never).call();
+
+    console.log("Interest Receivers " + interestReceivers);
+    console.log("Interest Values " + interestValues);
 
 
 
@@ -386,22 +454,30 @@ const getLiquidity = async () => {
 };
 
 const supportProject = async () => {
-  if (!venomConnect || !address || !loanAmount || !provider) return;
+  if (!venomConnect || !address || !poolid  || !poolStatus || !loanAmount || !provider) return;
   const userAddress = new Address(address);
-  const contractAddress = new Address("0:d286cf09d2cb12ea2e19e1fbb9a9074120be659c1aa53ac0a2f894eb913b6997"); // Our Tokensale contract address
-  const contract = new provider.Contract(WenomUnionAbi, contractAddress);
+  const contractAddress = new Address("0:e12f91b73b66240dac499e95a956e80789cfcdaa7fbac1d1c0bb21eee2304bb0"); // Our Tokensale contract address
+  const contract = new provider.Contract(GoldFishAbi, contractAddress);
 
   const deposit = new BigNumber(loanAmount).multipliedBy(1 ** 1).toString(); // Contract"s rate parameter is 1 venom = 10 tokens
     // another 1 venom for connection. You will receive a change, as you remember
   const amount = new BigNumber(deposit).plus(new BigNumber(1).multipliedBy(10 ** 9)).toString();
 
+  const pool_id = (poolid-1);
+
+  if(!poolStatus)
+  {
+    setStatusMsg("Barrow Pool is not yet ACCEPTED by the community");
+    return;
+  }
+  
   try {
    
     // and just call generatecompanyName method according to smart contract
     const result = await contract.methods
       .addSupport({
         amount : loanAmount,
-        pool_id : poolid
+        pool_id : pool_id
         } as never)
       .send({
         from: userAddress,
@@ -412,7 +488,59 @@ const supportProject = async () => {
       if (result?.id?.lt && result?.endStatus === "active")
       {
         console.log(result);
-        setStatusMsg("Adding Support to the pool" + poolid);
+        setStatusMsg("Adding Support to the pool " + borrowPool_.companyname);
+
+        getLiquidity();
+        
+      }   
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+
+ 
+
+
+const liquidity2BorrowPool = async () => {
+  if (!venomConnect || !address || !poolid  || !poolStatus || !liquidityFundTransfer || !provider) return;
+  const userAddress = new Address(address);
+  const contractAddress = new Address("0:e12f91b73b66240dac499e95a956e80789cfcdaa7fbac1d1c0bb21eee2304bb0"); // Our Tokensale contract address
+  const contract = new provider.Contract(GoldFishAbi, contractAddress);
+
+  const deposit = new BigNumber(liquidityFundTransfer).multipliedBy(1 ** 1).toString(); // Contract"s rate parameter is 1 venom = 10 tokens
+    // another 1 venom for connection. You will receive a change, as you remember
+  const amount = new BigNumber(deposit).plus(new BigNumber(1).multipliedBy(10 ** 9)).toString();
+
+  const pool_id = (poolid-1);
+
+  if(liquidityFundTransfer > 0)
+  {
+    setStatusMsg("Angel Supporters need to complete 20%");
+    return;
+  }
+  
+  try {
+   
+    // and just call generatecompanyName method according to smart contract
+    const result = await contract.methods
+      .transferFromLiquidity({
+        amount : liquidityFundTransfer,
+        pool_id : pool_id
+        } as never)
+      .send({
+        from: userAddress,
+        amount,
+        bounce: true,
+      });
+
+      if (result?.id?.lt && result?.endStatus === "active")
+      {
+        console.log(result);
+        setStatusMsg("Transfering liquidity amount USD " + liquidityFundTransfer + "  to  " + borrowPool_.companyname);
+
+        getLiquidity();
+        
       }   
   } catch (e) {
     console.error(e);
@@ -422,8 +550,8 @@ const supportProject = async () => {
 const addLiquidity = async () => {
   if (!venomConnect || !address || !loanAmount || !provider) return;
   const userAddress = new Address(address);
-  const contractAddress = new Address("0:d286cf09d2cb12ea2e19e1fbb9a9074120be659c1aa53ac0a2f894eb913b6997"); // Our Tokensale contract address
-  const contract = new provider.Contract(WenomUnionAbi, contractAddress);
+  const contractAddress = new Address("0:e12f91b73b66240dac499e95a956e80789cfcdaa7fbac1d1c0bb21eee2304bb0"); // Our Tokensale contract address
+  const contract = new provider.Contract(GoldFishAbi, contractAddress);
 
   const deposit = new BigNumber(loanAmount).multipliedBy(1 ** 1).toString(); // Contract"s rate parameter is 1 venom = 10 tokens
     // another 1 venom for connection. You will receive a change, as you remember
@@ -447,7 +575,52 @@ const addLiquidity = async () => {
     if (result?.id?.lt && result?.endStatus === "active") {
      
       console.log(result);
-      setStatusMsg("Adding liquidity to the pool");
+      setStatusMsg("Liquidity added to the pool " + loanAmount + ".00");
+      getLiquidity();
+   }   
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+const payInterest = async () => {
+  if (!venomConnect || !address || !poolid || !monthly_interest || !provider) 
+  {
+        setStatusMsg("Click CheckInterest");
+  	return;
+  }
+  
+  const userAddress = new Address(address);
+  const contractAddress = new Address("0:e12f91b73b66240dac499e95a956e80789cfcdaa7fbac1d1c0bb21eee2304bb0"); // Our Tokensale contract address
+  const contract = new provider.Contract(GoldFishAbi, contractAddress);
+
+  const deposit = new BigNumber(monthly_interest).multipliedBy(1 ** 1).toString(); // Contract"s rate parameter is 1 venom = 10 tokens
+    // another 1 venom for connection. You will receive a change, as you remember
+  const amount = new BigNumber(deposit).plus(new BigNumber(1).multipliedBy(10 ** 9)).toString();
+
+  const pool_id = (poolid-1);
+
+  try {
+
+    
+    // and just call generatecompanyName method according to smart contract
+    const result = await contract.methods
+      .payInterest({
+      	pool_id :pool_id,
+      	months: 2,
+        amount : monthly_interest
+        } as never)
+      .send({
+        from: userAddress,
+        amount,
+        bounce: true,
+      });
+
+
+    if (result?.id?.lt && result?.endStatus === "active") {
+     
+      console.log(result);
+      setStatusMsg("Your interest payment Successful  USD " + monthly_interest + ".00");
       getLiquidity();
    }   
   } catch (e) {
@@ -456,13 +629,12 @@ const addLiquidity = async () => {
 };
 
 
-
-const getBalanceINR = async () => {
+const getDollarBalance = async () => {
   if (!venomConnect || !address  || !provider) return;
 
   const userAddress = new Address(address);
 
-  const TokenRootContractAddress = new Address("0:65c3ff8fdd39c2487a9b0536c785ef8d528b1a6e8cefa9c2d03ddb1981255b6b")
+  const TokenRootContractAddress = new Address("0:f7c7581ddf1f1600d961e22dd21e1a21216468f3dd682f58c3cd2e5c5cf3e8e0")
   const tokenRootContract = new provider.Contract(TokenRootAbi, TokenRootContractAddress);
 
   const {value0: userTokenWalletAddress} = await tokenRootContract.methods.walletOf({answerId: 0, walletOwner: userAddress} as never).call();
@@ -470,47 +642,44 @@ const getBalanceINR = async () => {
   const {value0: userTokenBalance } = await contract.methods.balance({answerId: 0} as never).call();
 
   
-  const inr_balance = new BigNumber(userTokenBalance).dividedToIntegerBy(10**2).toString(); 
-  setBalance(inr_balance);
+  const dollar_balance = new BigNumber(userTokenBalance).dividedToIntegerBy(10**2).toString(); 
+  setBalance(dollar_balance);
 }
 
-getBalanceINR();
+getDollarBalance();
 
-const TransferINR = async () => {
+const InterestTransferDollars = async () => {
 
-  if (!venomConnect || !address || !loanAmount  || !provider) return;
-  const userAddress = new Address(address);
+  if (!venomConnect || !address || !monthly_interest  || !provider)
+  {
+    console.log("No InterestTransferDollars data");
+    return;
+  }
+   const userAddress = new Address(address);
 
-
-
-
-
-
-
-
-  const TokenRootContractAddress = new Address("0:65c3ff8fdd39c2487a9b0536c785ef8d528b1a6e8cefa9c2d03ddb1981255b6b")
+  const TokenRootContractAddress = new Address("0:f7c7581ddf1f1600d961e22dd21e1a21216468f3dd682f58c3cd2e5c5cf3e8e0")
   const tokenRootContract = new provider.Contract(TokenRootAbi, TokenRootContractAddress);
 
   const {value0: userTokenWalletAddress} = await tokenRootContract.methods.walletOf({answerId: 0, walletOwner: userAddress} as never).call();
   const contract = new provider.Contract(TokenWallet, userTokenWalletAddress);
   const {value0: userTokenBalance } = await contract.methods.balance({answerId: 0} as never).call();
 
-  const amount = new BigNumber(loanAmount).multipliedBy(10 ** 2).toString(); // Contract"s rate parameter is 1 venom = 10 tokens
-  const inr_balance = new BigNumber(userTokenBalance).dividedToIntegerBy(1).toString(); 
+  const amount = new BigNumber(monthly_interest).multipliedBy(10 ** 2).toString(); // Contract"s rate parameter is 1 venom = 10 tokens
+  const dollar_balance = new BigNumber(userTokenBalance).dividedToIntegerBy(1).toString(); 
 
-  if(inr_balance < amount)
+  if(dollar_balance < amount)
   {
     setStatusMsg("Insucfficient Balance");
     return;
   }
 
-  setStatusMsg("Waiting for Transfer Approval INR " + loanAmount + ".00 ");
+  setStatusMsg("Waiting for Interest Transfer Approval USD " + monthly_interest + ".00 ");
 
   const {value0: symbol} = await tokenRootContract.methods.symbol({answerId: 0} as never ).call();
   const {value0: decimals} = await tokenRootContract.methods.decimals({answerId: 0} as never).call();
  
-
-  getBalanceINR();
+  console.log(symbol + " Decimals" + decimals);
+  getDollarBalance();
 
 
   const gas = new BigNumber(15).multipliedBy(10 ** 7).toString(); // Contract"s rate parameter is 1 venom = 10 tokens
@@ -521,19 +690,20 @@ const TransferINR = async () => {
 
 
   const remainingGasTo = new Address("0:da5e5db1755592b73d27fcdc640d26b251abe0280a0240d06ee79e08f02aa151"); // Our Tokensale contract address
-  const contractAddress = new Address("0:65c3ff8fdd39c2487a9b0536c785ef8d528b1a6e8cefa9c2d03ddb1981255b6b"); // Our Tokensale contract address
-  const tokenRupee = new provider.Contract(IndianRupee, contractAddress);
 
-  const recipient = tokenRupee.address;
+
+
+  const contractAddress = new Address("0:e12f91b73b66240dac499e95a956e80789cfcdaa7fbac1d1c0bb21eee2304bb0"); // Our Tokensale contract address
+  const goldFishWallet = new provider.Contract(GoldFishAbi, contractAddress);
+  const recipient = goldFishWallet.address;
+
 
   const notify = true;
-
-
   
  
   try {
 
-    setStatusMsg("Transaction is in progress....");
+    setStatusMsg("💸 Sending USD "+ monthly_interest + " as monthly re-payment");
 
     // Transfer Rupees method according to smart contract
     const result = await contract.methods
@@ -552,13 +722,244 @@ const TransferINR = async () => {
 
       const {value0: userTokenBalance } = await contract.methods.balance({answerId: 0} as never).call();
 
-      setStatusMsg("Secret Code generation in started");
+      setStatusMsg("Interest payment of USD " + monthly_interest + " successful 💰");
 
+      payInterest();
        
 
       console.log(result);
 
-      getBalanceINR();
+      getDollarBalance();
+    }
+  } catch (e) {
+    
+    setStatusMsg("Use rejected the transaction");
+
+  }
+  
+
+};
+
+
+const SupportTransferDollars = async () => {
+
+  if (!venomConnect || !address || !loanAmount  || !provider) return;
+  const userAddress = new Address(address);
+
+  const TokenRootContractAddress = new Address("0:f7c7581ddf1f1600d961e22dd21e1a21216468f3dd682f58c3cd2e5c5cf3e8e0")
+  const tokenRootContract = new provider.Contract(TokenRootAbi, TokenRootContractAddress);
+
+  const {value0: userTokenWalletAddress} = await tokenRootContract.methods.walletOf({answerId: 0, walletOwner: userAddress} as never).call();
+  const contract = new provider.Contract(TokenWallet, userTokenWalletAddress);
+  const {value0: userTokenBalance } = await contract.methods.balance({answerId: 0} as never).call();
+
+  const amount = new BigNumber(loanAmount).multipliedBy(10 ** 2).toString(); // Contract"s rate parameter is 1 venom = 10 tokens
+  const dollar_balance = new BigNumber(userTokenBalance).dividedToIntegerBy(1).toString(); 
+
+  if(dollar_balance < amount)
+  {
+    setStatusMsg("Insucfficient Balance");
+    return;
+  }
+
+  setStatusMsg("Waiting for 👰🏻‍♀️ Angel Support transfer Approval USD " + loanAmount + ".00 ");
+
+  const {value0: symbol} = await tokenRootContract.methods.symbol({answerId: 0} as never ).call();
+  const {value0: decimals} = await tokenRootContract.methods.decimals({answerId: 0} as never).call();
+ 
+  console.log(symbol + " Decimals" + decimals);
+  getDollarBalance();
+
+
+  const gas = new BigNumber(15).multipliedBy(10 ** 7).toString(); // Contract"s rate parameter is 1 venom = 10 tokens
+
+  const deployWalletValue = new BigNumber(15).multipliedBy(10 **6).toString(); // Contract"s rate parameter is 1 venom = 10 tokens
+
+  const payload = '';
+
+
+  const remainingGasTo = new Address("0:da5e5db1755592b73d27fcdc640d26b251abe0280a0240d06ee79e08f02aa151"); // Our Tokensale contract address
+
+  const contractAddress = new Address("0:e12f91b73b66240dac499e95a956e80789cfcdaa7fbac1d1c0bb21eee2304bb0"); // Our Tokensale contract address
+  const goldFishWallet = new provider.Contract(GoldFishAbi, contractAddress);
+  const recipient = goldFishWallet.address;
+
+
+  const notify = true;
+  
+ 
+  try {
+
+    setStatusMsg("👰🏻‍♀️ An Angel is Sending 💸  Support amount USD "+ loanAmount + " towards Borrow Pool of " + borrowPool_.website);
+
+    // Transfer Rupees method according to smart contract
+    const result = await contract.methods
+      .transfer({
+        amount, recipient,deployWalletValue,remainingGasTo,notify,payload
+      } as never)
+      .send({
+        from: userAddress,
+        amount: gas,
+        bounce: true,
+      });
+
+
+
+    if (result?.id?.lt && result?.endStatus === "active") {
+
+      const {value0: userTokenBalance } = await contract.methods.balance({answerId: 0} as never).call();
+
+      setStatusMsg("Transaction registration started.....");
+
+      supportProject();
+       
+
+      console.log(result);
+
+      getDollarBalance();
+    }
+  } catch (e) {
+    
+    setStatusMsg("Use rejected the transaction");
+  }   
+
+};
+
+const claimUserProfit = async () => {
+
+  if (!venomConnect || !address || !loanAmount  || !provider) return;
+  const userAddress = new Address(address);
+  const contractAddress = new Address("0:e12f91b73b66240dac499e95a956e80789cfcdaa7fbac1d1c0bb21eee2304bb0"); // Our Tokensale contract address
+  const contract = new provider.Contract(GoldFishAbi, contractAddress);
+
+  const deposit = new BigNumber(loanAmount).multipliedBy(1 ** 1).toString(); // Contract"s rate parameter is 1 venom = 10 tokens
+    // another 1 venom for connection. You will receive a change, as you remember
+  const amount = new BigNumber(deposit).plus(new BigNumber(1).multipliedBy(10 ** 9)).toString();
+  const gas = new BigNumber(15).multipliedBy(10 ** 7).toString(); // Contract"s rate parameter is 1 venom = 10 tokens
+
+  
+  try {
+
+    setStatusMsg("💸 Claiming Profit from the interest re-payments");
+
+    const claimAmount = Math.floor(Math.random() * 1000);
+
+    console.log("Claiming amount "+ claimAmount);
+
+    // Transfer Rupees method according to smart contract
+    const result = await contract.methods
+      .claimProfit({
+        amount : claimAmount
+      } as never)
+      .send({
+        from: userAddress,
+        amount: gas,
+        bounce: true,
+      });
+
+
+
+    if (result?.id?.lt && result?.endStatus === "active") {
+
+      const {value0: userTokenBalance } = await contract.methods.balance({answerId: 0} as never).call();
+
+      setStatusMsg("Claim Successful");
+       
+
+      console.log(result);
+
+      getDollarBalance();
+    }
+  } catch (e) {
+    
+    console.log(e);
+    setStatusMsg("Use rejected the transaction" );
+
+
+  }
+
+   
+
+};
+
+const LiquidityTransferDollars = async () => {
+
+  if (!venomConnect || !address || !loanAmount  || !provider) return;
+  const userAddress = new Address(address);
+
+  const TokenRootContractAddress = new Address("0:f7c7581ddf1f1600d961e22dd21e1a21216468f3dd682f58c3cd2e5c5cf3e8e0")
+  const tokenRootContract = new provider.Contract(TokenRootAbi, TokenRootContractAddress);
+
+  const {value0: userTokenWalletAddress} = await tokenRootContract.methods.walletOf({answerId: 0, walletOwner: userAddress} as never).call();
+  const contract = new provider.Contract(TokenWallet, userTokenWalletAddress);
+  const {value0: userTokenBalance } = await contract.methods.balance({answerId: 0} as never).call();
+
+  const amount = new BigNumber(loanAmount).multipliedBy(10 ** 2).toString(); // Contract"s rate parameter is 1 venom = 10 tokens
+  const dollar_balance = new BigNumber(userTokenBalance).dividedToIntegerBy(1).toString(); 
+
+  if(dollar_balance < amount)
+  {
+    setStatusMsg("Insucfficient Balance");
+    return;
+  }
+
+  setStatusMsg("Waiting for Liquidity transfer Approval USD " + loanAmount + ".00 ");
+
+  const {value0: symbol} = await tokenRootContract.methods.symbol({answerId: 0} as never ).call();
+  const {value0: decimals} = await tokenRootContract.methods.decimals({answerId: 0} as never).call();
+ 
+  console.log(symbol + " Decimals" + decimals);
+  getDollarBalance();
+
+
+  const gas = new BigNumber(15).multipliedBy(10 ** 7).toString(); // Contract"s rate parameter is 1 venom = 10 tokens
+
+  const deployWalletValue = new BigNumber(15).multipliedBy(10 **6).toString(); // Contract"s rate parameter is 1 venom = 10 tokens
+
+  const payload = '';
+
+
+  const remainingGasTo = new Address("0:da5e5db1755592b73d27fcdc640d26b251abe0280a0240d06ee79e08f02aa151"); // Our Tokensale contract address
+  //const contractAddress = new Address("0:f7c7581ddf1f1600d961e22dd21e1a21216468f3dd682f58c3cd2e5c5cf3e8e0"); // Our Tokensale contract address
+  //const tokenRupee = new provider.Contract(Dollar, contractAddress);
+
+
+  const contractAddress = new Address("0:e12f91b73b66240dac499e95a956e80789cfcdaa7fbac1d1c0bb21eee2304bb0"); // Our Tokensale contract address
+  const goldFishWallet = new provider.Contract(GoldFishAbi, contractAddress);
+  const recipient = goldFishWallet.address;
+
+  const notify = true;
+  
+ 
+  try {
+
+    setStatusMsg("💸 Sending USD "+ loanAmount + " to the Liquidity");
+
+    // Transfer Rupees method according to smart contract
+    const result = await contract.methods
+      .transfer({
+        amount, recipient,deployWalletValue,remainingGasTo,notify,payload
+      } as never)
+      .send({
+        from: userAddress,
+        amount: gas,
+        bounce: true,
+      });
+
+
+
+    if (result?.id?.lt && result?.endStatus === "active") {
+
+      const {value0: userTokenBalance } = await contract.methods.balance({answerId: 0} as never).call();
+
+      setStatusMsg("Liquidity Transaction registration is in progress....");
+
+      addLiquidity();
+       
+
+      console.log(result);
+
+      getDollarBalance();
     }
   } catch (e) {
     
@@ -577,11 +978,11 @@ const TransferINR = async () => {
     const userAddress = new Address(address);
     const contractAddress1 = new Address("0:fac0dea61ab959bf5fc5d325b6ef97ef45ef371c8649042e92b64e46c3c854d5"); // Our Tokensale contract address
 
-    const contractAddress = new Address("0:d286cf09d2cb12ea2e19e1fbb9a9074120be659c1aa53ac0a2f894eb913b6997"); // Our Tokensale contract address
+    const contractAddress = new Address("0:e12f91b73b66240dac499e95a956e80789cfcdaa7fbac1d1c0bb21eee2304bb0"); // Our Tokensale contract address
 
-    const contract = new provider.Contract(WenomUnionAbi, contractAddress);
+    const contract = new provider.Contract(GoldFishAbi, contractAddress);
 
-    setStatusMsg("Withdraw of INR started");
+    setStatusMsg("Withdraw of USD started");
 
 
     var _secret_code = companyName;
@@ -589,7 +990,7 @@ const TransferINR = async () => {
     setcompanyNameDisplay(_secret_code);
 
     try {
-      setStatusMsg("Withdraw of INR is in progress.....");
+      setStatusMsg("Withdraw of USD is in progress.....");
 
       // withDrawTokens method according to smart contract
       const result = await contract.methods
@@ -605,7 +1006,7 @@ const TransferINR = async () => {
 
       if (result?.id?.lt && result?.endStatus === "active") {
         setStatusMsg("Withdraw Success !");
-        getBalanceINR();
+        getDollarBalance();
       }
     } catch (e) {
       console.error(e);
@@ -614,33 +1015,47 @@ const TransferINR = async () => {
   };
   return (
     <>
-      <h1>GoldFish Finance 🐠  🔜  { poolStatus } <br></br>
+      <h1>GoldFish Finance 🐠  🔜  <span className="item-price">{ poolStatus } </span><br></br>
       Community Voted, Zero Collateral Loan<br></br>
       </h1>
       <div className="item-info">
       <a className="item-price" href="http://bit.ly/goldfish-5871748"><h2>👉🏼 How to use? 👈🏻</h2></a>
 
-      <a className={!loanAmount ? "btn disabled" : "btn"} onClick={createBarrowPool}>
-        Create Barrow Pool 💰
+      <a className={!loanAmount ? "btn disabled" : "btn"} onClick={createBorrowPool}>
+        Create Borrow Pool 💰
       </a>  
 
-      <a className={!loanAmount ? "btn disabled" : "btn"} onClick={addLiquidity}>
-      Add Liquidity 💸
-        </a>
       <a className={!poolid ? "btn disabled" : "btn"} onClick={getLiquidity}>
          Get Pool Status 📚
-      </a>                 
+      </a>    
+
+      <a className={!loanAmount ? "btn disabled" : "btn"} onClick={SupportTransferDollars}>
+          Support Project 🪙
+      </a>          
+      
+      <a className={!loanAmount ? "btn disabled" : "btn"} onClick={LiquidityTransferDollars}>
+        Add Liquidity 💸
+      </a>
 
       </div>      
       <div className="item-msg">
         <span>{statusMsg}</span>
       </div>      
-      <div className="item-price">
-        <span><b>Total Senior Liquidity USD {all_liquidity} </b></span>
-         
+      <div className="item-price"><span><b>
+      {(monthly_interest) ? 
+       "🏦 Total Senior Liquidity USD " + all_liquidity+ "   | 👰🏻‍♀️💰 Total Borrow Pool Amount USD "+  poolMoney 
+         : " "
+      }
+
+    {(isBackerSupported) ? 
+       "👰🏻‍♀️💰 Supporters Funding above 20%"
+         : " "
+      }
+       
+      </b></span>
       </div>
       <div className="item-info">
-        <span>Barrow Pool Owner <b>{ barrowCreator }</b></span>
+        <span>Borrow Pool Owner <b>{ borrowCreator }</b></span>
       </div>      
       <div className="item-info">
         <span>Loan Amount</span>&nbsp;  <span>Pool ID</span>&nbsp;<span>Website</span>&nbsp;
@@ -719,7 +1134,7 @@ const TransferINR = async () => {
         <span>Company Name </span>&nbsp;
       </div>
       <div className="item-info">
-      <textarea name="postContent" rows={3} cols={60}
+      <textarea name="postContent" rows={2} cols={60}
        value={companyName !== undefined ? companyName : ""}
        
        onChange={(e) => {
@@ -730,17 +1145,19 @@ const TransferINR = async () => {
 
       <div className="item-info">
 
-      <a className={!loanAmount ? "btn disabled" : "btn"} onClick={supportProject}>
-          Support Project 🪙
-      </a>          
-      
-        <a className={!tenure ? "btn disabled" : "btn"} onClick={withDrawTokens}>
-          Check Interest 💹
-        </a>         
-      <a className={!loanAmount ? "btn disabled" : "btn"} onClick={withDrawTokens}>
+
+
+      <a className={!tenure ? "btn disabled" : "btn"} onClick={liquidity2BorrowPool}>
+          Withdraw Barrow Amount 💹
+      </a>    
+      <a className={!loanAmount ? "btn disabled" : "btn"} onClick={claimUserProfit}>
+        Claim Profit 🤑
+      </a>  
+     
+      <a className={(!isCreator || !monthly_interest) ? "btn disabled" : "btn"} onClick={InterestTransferDollars}>
           Pay Interest 🏦
-        </a> 
-        <a className={!poolid ? "btn disabled" : "btn"} onClick={onDisconnect}>
+        </a>   
+        <a className={"btn"} onClick={onDisconnect}>
           Logout 🔓
         </a>  
       </div>      

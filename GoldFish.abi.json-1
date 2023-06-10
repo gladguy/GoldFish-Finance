@@ -84,6 +84,15 @@
 				{"name":"pool_id","type":"uint256"}
 			],
 			"outputs": [
+			]
+		},
+		{
+			"name": "addSupportFund",
+			"inputs": [
+				{"name":"amount","type":"uint256"},
+				{"name":"pool_id","type":"uint256"}
+			],
+			"outputs": [
 				{"name":"value0","type":"string"}
 			]
 		},
@@ -118,11 +127,16 @@
 			]
 		},
 		{
+			"name": "claimProfit",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"value0","type":"uint256"}
+			]
+		},
+		{
 			"name": "getInterestShare",
 			"inputs": [
-				{"name":"pool_id","type":"uint256"},
-				{"name":"months","type":"uint256"},
-				{"name":"amount","type":"uint256"}
 			],
 			"outputs": [
 				{"name":"value0","type":"address[]"},

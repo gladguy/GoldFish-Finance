@@ -1,7 +1,7 @@
 import { Address, getRandomNonce, toNano } from "locklift";
 
 async function main() {
-  const json = {
+  const json1 = {
     "type": "NFT",
     "name": "Venom Apes in Venom",
     "description": "Apes jumped in to Venom chain",
@@ -16,6 +16,23 @@ async function main() {
       }
     ],
     "external_url": "https://venomapes.com/"
+  };
+
+  const json = {
+    "type": "DeFi",
+    "name": "GoldFish Finance 🐡🐡",
+    "description": "GoldFish Finance - Community Voted, Zero Collateral Loan in Venom chain",
+    "preview": {
+      "source": "https://goldfishfinance.web.app/goldfish.jpg",
+      "mimetype": "image/png"
+    },
+    "files": [
+      {
+        "source": "https://goldfishfinance.web.app/goldfish.jpg",
+        "mimetype": "image/jpg"
+      }
+    ],
+    "external_url": "https://goldfishfinance.web.app/"
   };
   const signer = (await locklift.keystore.getSigner("0"))!;
   //const contract = locklift.getDeployedContract();
